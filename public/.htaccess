@@ -1,0 +1,13 @@
+Options -Indexes
+DirectoryIndex disabled
+# Fail closed over HTTP. Configure AutoSSL; do not redirect callback query strings.
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ - [F,L]
+<FilesMatch "(^\.|\.(sql|log|jsonl|ini|env|bak|dist)$)">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(private-path(?:\.example)?|_bootstrap)\.php$">
+    Require all denied
+</FilesMatch>

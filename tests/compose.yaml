@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mariadb:11.4@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+    environment:
+      MARIADB_ROOT_PASSWORD: local-root-test-only
+      MARIADB_DATABASE: oauth_test
+      MARIADB_USER: oauth_test
+      MARIADB_PASSWORD: local-test-only
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+    tmpfs:
+      - /var/lib/mysql
+  test:
+    build:
+      context: ..
+      dockerfile: tests/Dockerfile
+    volumes:
+      - ..:/app:ro
+    environment:
+      TEST_DSN: mysql:host=db;dbname=oauth_test;charset=utf8mb4
+    depends_on:
+      db:
+        condition: service_healthy
+    command: [php, tests/run.php]

@@ -1,0 +1,6 @@
+.git
+private/settings.php
+private/auth.php
+private/logs
+.env
+public/bling/private-path.php

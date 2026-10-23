@@ -1,0 +1,6 @@
+/private/settings.php
+/private/auth.php
+/private/logs/
+/.env
+/tests/.runtime/
+/public/bling/private-path.php
