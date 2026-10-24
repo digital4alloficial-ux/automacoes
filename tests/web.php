@@ -55,10 +55,12 @@ try {
     [$status] = webRequest($address, '/fixture/insecure', $cookie); check($status === 403, 'HTTPS obrigatório na aplicação');
     [$status, $headers, $body] = webRequest($address, '/bling/connect.php?company_id=2', $cookie);
     check($status === 200 && str_contains($headers, 'no-store') && str_contains($headers, 'no-referrer'), 'formulário autenticado sem cache e sem referrer');
+    check(str_contains($headers, "form-action 'self' https://www.bling.com.br;"), 'CSP do formulário permite redirect apenas ao origin Bling configurado');
     preg_match('/name="csrf" value="([a-f0-9]+)"/', $body, $m); $csrf = $m[1] ?? '';
     [$status] = webRequest($address, '/bling/connect.php', $cookie, ['csrf' => 'wrong']); check($status === 400, 'CSRF inválido bloqueado na rota');
     [$status, $headers] = webRequest($address, '/bling/connect.php?company_id=2', $cookie, ['csrf' => $csrf]);
     check($status === 303 && str_contains($headers, 'Location: https://www.bling.com.br/'), 'POST autenticado inicia autorização');
+    check(str_contains($headers, "form-action 'self' https://www.bling.com.br;"), 'CSP da resposta POST também permite redirect para Bling');
     preg_match('/Location: ([^\r\n]+)/i', $headers, $m); $state = stateOf($m[1]);
     $stmt = $db->prepare('SELECT company_id FROM bling_oauth_states WHERE state_hash = ?'); $stmt->execute([hash('sha256', $state)]);
     check((int) $stmt->fetchColumn() === 1, 'company_id da URL ignorado em favor da identidade autorizada');

@@ -2,6 +2,11 @@
 declare(strict_types=1);
 require __DIR__ . '/_bootstrap.php';
 
+// Chrome enforces form-action on the external redirect after the POST too.
+// Config validation restricts this origin to an approved HTTPS Bling host.
+$authorizeOrigin = 'https://' . parse_url($c['authorize_url'], PHP_URL_HOST);
+header("Content-Security-Policy: default-src 'none'; style-src 'self'; form-action 'self' $authorizeOrigin; frame-ancestors 'none'; base-uri 'none'");
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $_SESSION['connect_csrf'] ??= bin2hex(random_bytes(32));
     $csrf = htmlspecialchars($_SESSION['connect_csrf'], ENT_QUOTES, 'UTF-8');
