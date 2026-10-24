@@ -3,7 +3,7 @@
 ## Concluído
 
 - Aplicação PHP com login local, permissões por empresa, OAuth Bling, tokens criptografados e renovação concorrente.
-- Testes locais registrados: 95 checks PHP/MariaDB e 2 verificações no Chromium para a correção de CSP. Resultados históricos, não reexecutados nesta atualização documental.
+- Testes locais registrados: 139 checks PHP/MariaDB aprovados após adicionar produtos/estoque, com provedor simulado. As 2 verificações no Chromium da correção de CSP foram aprovadas anteriormente e não foram alteradas nesta etapa.
 - Documentação oficial de endpoints e JWT consultada; correção de CSP enviada ao GitHub para permitir o redirect ao Bling.
 
 ## Homologação real informada pelo usuário
@@ -24,8 +24,8 @@ Esses resultados validam o fluxo funcional reportado; não equivalem à verifica
 
 Desenvolvimento e homologação podem continuar conforme solicitação do usuário. O requisito continua aberto e a liberação de novos clientes de produção permanece pendente.
 
-## Próxima etapa
+## Produtos e estoque implementados, aguardando implantação
 
-Escolher o primeiro recurso de **leitura** a integrar (produtos/estoque, pedidos ou financeiro) e confirmar os endpoints e escopos correspondentes na documentação oficial. Ainda não há operação de leitura de negócio implementada nem requisições desse tipo executadas pelo Codex. Nenhuma operação de escrita está autorizada nesta etapa.
+Após escolher Produtos e estoque, o usuário autorizou seguir com consultas de leitura. Implementados listagem paginada de produtos ativos e saldos totais por lote de IDs. Endpoints/formatos confirmados na OpenAPI oficial, sem escrita. O painel reutiliza autenticação e tokens por empresa, é desabilitado por padrão e exige habilitação explícita na configuração privada de homologação.
 
-A próxima implementação deve reutilizar a identidade autorizada e o gerenciador de tokens, limitar consultas por empresa, validar paginação/filtros e não expor tokens, dados de outras empresas ou corpos de resposta nos logs. Consultas reais devem permanecer controladas e seus dados não devem ser publicados no repositório.
+Ver [CATALOG.md](CATALOG.md) para os quatro arquivos a publicar e a configuração necessária. Não exige migração SQL. A funcionalidade foi validada localmente com transporte simulado; não foi implantada pelo Codex e não houve consulta real de dados de produtos/estoque. A homologação real do catálogo é o próximo passo. A SEC-001 continua aberta.

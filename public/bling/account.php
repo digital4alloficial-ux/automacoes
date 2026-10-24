@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!session_regenerate_id(true)) { throw new RuntimeException('Session unavailable'); }
     $_SESSION['company_id']=$selected;
     unset($_SESSION['connect_csrf'],$_SESSION['bling_result'],$_SESSION['account_csrf']);
-    session_write_close(); header('Location: /bling/connect.php',true,303); exit;
+    session_write_close(); header('Location: ' . (($_POST['destination'] ?? '') === 'catalog' && ($c['read_catalog_enabled'] ?? false) === true ? '/bling/products.php' : '/bling/connect.php'),true,303); exit;
 }
 $csrf=htmlspecialchars($_SESSION['account_csrf'],ENT_QUOTES,'UTF-8');
 echo '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Digital4All — Empresas</title><h1>Suas empresas</h1>';
@@ -24,7 +24,9 @@ if (!$companies) { echo '<p>Você ainda não tem permissão para conectar empres
 else {
     echo '<form method="post"><input type="hidden" name="csrf" value="'.$csrf.'"><label>Empresa <select name="company">';
     foreach ($companies as $company) { echo '<option value="'.(int)$company['id'].'">'.htmlspecialchars($company['name'],ENT_QUOTES,'UTF-8').'</option>'; }
-    echo '</select></label><button>Conectar ao Bling</button></form>';
+    echo '</select></label><button name="destination" value="connect">Conectar ao Bling</button>';
+    if (($c['read_catalog_enabled'] ?? false) === true) { echo '<button name="destination" value="catalog">Consultar produtos e estoque</button>'; }
+    echo '</form>';
 }
 $_SESSION['logout_csrf'] ??= bin2hex(random_bytes(32));
 echo '<form method="post" action="/bling/logout.php"><input type="hidden" name="csrf" value="'.htmlspecialchars($_SESSION['logout_csrf'],ENT_QUOTES,'UTF-8').'"><button>Sair</button></form></html>';

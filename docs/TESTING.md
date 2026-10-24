@@ -49,3 +49,7 @@ Implantação desta correção: substituir apenas `public/bling/connect.php` na 
 ## Homologação real reportada e limitação de segurança
 
 Em 24/10/2026 o usuário confirmou conexão PHP/MySQL, seis tabelas, login local, consentimento Bling e renovação controlada bem-sucedidos. Os comandos foram executados pelo usuário no seu SSH, sem exposição de tokens ao Codex. O item de logs de infraestrutura **não passou**: o suporte confirmou query OAuth nos access logs, sem garantia de redação no Premium. Ver [SEC-001](SECURITY.md). A continuidade de desenvolvimento foi solicitada com a pendência registrada; não equivale à aprovação de produção. Nenhuma operação de negócio/leitura/escrita foi executada nesta homologação OAuth.
+
+## Produtos/estoque — 24/10/2026
+
+139 checks PHP/MariaDB aprovados após a extensão de leitura, sem credenciais reais. Inclui painel renderizado contra banco real e transporte de dados simulado, tokens por empresa, validação de paginação/IDs, campos ausentes, saldos fracionários/negativos, erros HTTP/JSON, ausência de retry, allowlist de URLs, XSS e GET exclusivo. Os 95 checks citados nas seções anteriores são a linha de base histórica. Ver CATALOG.md para limites e homologação real ainda pendente. A verificação dos logs de infraestrutura permanece reprovada na SEC-001.

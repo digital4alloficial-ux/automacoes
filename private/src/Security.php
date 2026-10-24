@@ -47,7 +47,7 @@ final class TechnicalLog
     public function write(string $event, string $requestId): void
     {
         // Strict allowlist: never pass exceptions, URLs, request bodies or identities.
-        $allowed = ['authorized', 'denied', 'state_invalid', 'state_expired', 'state_stale', 'provider_denied', 'callback_invalid', 'token_rejected', 'token_transport_failed', 'token_response_invalid', 'reauthorization_required', 'stored_token_invalid', 'internal_error', 'csrf_invalid', 'rate_limited'];
+        $allowed = ['api_invalid_request', 'api_response_invalid', 'api_unauthorized', 'api_forbidden', 'api_rate_limited', 'api_unavailable', 'api_transport_failed', 'authorized', 'denied', 'state_invalid', 'state_expired', 'state_stale', 'provider_denied', 'callback_invalid', 'token_rejected', 'token_transport_failed', 'token_response_invalid', 'reauthorization_required', 'stored_token_invalid', 'internal_error', 'csrf_invalid', 'rate_limited'];
         if (!in_array($event, $allowed, true)) {
             $event = 'internal_error';
         }

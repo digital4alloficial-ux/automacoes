@@ -15,6 +15,7 @@ return [
     'authorize_url' => 'https://www.bling.com.br/Api/v3/oauth/authorize',
     'token_url' => 'https://api.bling.com.br/Api/v3/oauth/token',
     'endpoints_verified' => true,
+    'read_catalog_enabled' => false, // Enable only for controlled homologation; see docs/CATALOG.md.
     'auth_mode' => 'local', // Built-in login; use 'adapter' only for an existing identity system.
     'auth_adapter' => __DIR__ . '/auth.php',
     'log_file' => __DIR__ . '/logs/oauth.jsonl',

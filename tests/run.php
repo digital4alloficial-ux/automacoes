@@ -103,6 +103,7 @@ check(!str_contains($logs, 'SECRET') && !str_contains($logs, 'test-access') && !
 check(str_contains($logs, 'internal_error') && str_contains($logs, 'authorized'), 'log técnico estruturado');
 require __DIR__ . '/auth.php';
 require __DIR__ . '/provision.php';
+require __DIR__ . '/catalog.php';
 require __DIR__ . '/web.php';
 require __DIR__ . '/transport.php';
 echo "\n$passed checks passed; 0 failed. Provider simulated; MariaDB real.\n";

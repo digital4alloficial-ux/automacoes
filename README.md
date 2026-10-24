@@ -1,6 +1,6 @@
 # Digital4All · Bling OAuth 2.0
 
-Integração PHP 8.2+ para múltiplas empresas, destinada ao subdomínio `api.digital4all.com.br`. Implementa autorização, callback, armazenamento criptografado e renovação. **Não realiza operações de negócio, leitura ou escrita na API do Bling.** Os únicos POSTs do provedor são trocas OAuth.
+Integração PHP 8.2+ para múltiplas empresas, destinada ao subdomínio `api.digital4all.com.br`. Implementa autorização, callback, armazenamento criptografado e renovação. Inclui consulta de produtos e estoque, somente leitura e desabilitada por padrão até configuração da homologação. Não implementa operações de escrita no Bling; os POSTs ao provedor são exclusivamente trocas OAuth.
 
 O Codex desenvolve e testa o código; a aplicação PHP na Hostinger mantém a autorização OAuth com o Bling. Conectar ferramentas diretamente ao Codex exigiria uma camada adicional de ferramentas autenticadas, fora do escopo implementado.
 
@@ -43,6 +43,7 @@ Se o provedor registrar a linha HTTP completa, ela poderá conter `code` e `stat
 
 ## Arquivos e instalação
 
+- [Produtos e estoque: implantação e teste](docs/CATALOG.md)
 - [Estado e próximas etapas](docs/STATUS.md)
 - [Pendências de segurança](docs/SECURITY.md)
 - [Login próprio e primeiro cliente](docs/LOGIN.md)

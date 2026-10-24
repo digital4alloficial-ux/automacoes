@@ -4,8 +4,26 @@ declare(strict_types=1);
 $fixture = sys_get_temp_dir() . '/d4a-web-' . bin2hex(random_bytes(8));
 mkdir($fixture, 0700); mkdir($fixture . '/private', 0700); mkdir($fixture . '/private/src', 0700); mkdir($fixture . '/private/logs', 0700); mkdir($fixture . '/public', 0700); mkdir($fixture . '/public/bling', 0700);
 $project = dirname(__DIR__);
-foreach (['config.php', 'bootstrap.php', 'oauth.php', 'src/Security.php', 'src/TokenClient.php', 'src/LocalAuth.php'] as $file) { copy($project . '/private/' . $file, $fixture . '/private/' . $file); }
-foreach (['connect.php', 'callback.php', 'result.php', '_bootstrap.php', 'login.php', 'account.php', 'logout.php'] as $file) { copy($project . '/public/bling/' . $file, $fixture . '/public/bling/' . $file); }
+foreach (['config.php', 'bootstrap.php', 'oauth.php', 'src/Security.php', 'src/TokenClient.php', 'src/LocalAuth.php', 'src/Catalog.php'] as $file) { copy($project . '/private/' . $file, $fixture . '/private/' . $file); }
+foreach (['connect.php', 'callback.php', 'result.php', '_bootstrap.php', 'login.php', 'account.php', 'logout.php', 'products.php'] as $file) { copy($project . '/public/bling/' . $file, $fixture . '/public/bling/' . $file); }
+// Replace only the external transport in the disposable copy; production uses cURL.
+$catalogPage=file_get_contents($fixture . '/public/bling/products.php');
+$catalogPage=str_replace('new \Digital4All\CurlReadTransport()', 'new \Digital4All\FixtureCatalogTransport()', $catalogPage);
+file_put_contents($fixture . '/public/bling/products.php',$catalogPage);
+file_put_contents($fixture . '/fixture-catalog.php', <<<'FIXTURE'
+<?php
+namespace Digital4All;
+require_once __DIR__ . '/private/oauth.php';
+require_once __DIR__ . '/private/src/Catalog.php';
+final class FixtureCatalogTransport implements ReadTransport {
+ public function get(string $path,array $query,string $token): array {
+  if ($token !== 'test-access-catalog-a') { throw new ReadFailure('api_unauthorized'); }
+  return $path === '/produtos'
+   ? [['id'=>10,'nome'=>'<script>UNTRUSTED-CATALOG</script>','codigo'=>'SKU-10']]
+   : [['produto'=>['id'=>10],'saldoFisicoTotal'=>2.5,'saldoVirtualTotal'=>-1]];
+ }
+}
+FIXTURE);
 $settings = testConfig();
 $settings['authorize_url'] = 'https://www.bling.com.br/'; // Fixture website URL, NOT a claimed API endpoint.
 $settings['token_url'] = 'https://www.bling.com.br/'; // No outbound requests in route tests.
@@ -27,7 +45,8 @@ if ($path === '/fixture/login') {
 $_SERVER['DOCUMENT_ROOT'] = __DIR__ . '/public';
 $_SERVER['HTTPS'] = $path === '/fixture/insecure' ? 'off' : 'on';
 if ($path === '/fixture/insecure') { $path = '/bling/connect.php'; }
-if (!in_array($path, ['/bling/connect.php', '/bling/callback.php', '/bling/result.php', '/bling/login.php', '/bling/account.php', '/bling/logout.php'], true)) { http_response_code(404); return; }
+if (!in_array($path, ['/bling/connect.php', '/bling/callback.php', '/bling/result.php', '/bling/login.php', '/bling/account.php', '/bling/logout.php', '/bling/products.php'], true)) { http_response_code(404); return; }
+if ($path === '/bling/products.php') { require_once __DIR__ . '/fixture-catalog.php'; }
 require __DIR__ . '/public' . $path;
 PHP);
 $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $errstr); $address = stream_socket_get_name($socket, false); fclose($socket);
@@ -47,6 +66,7 @@ try {
     for ($i = 0; $i < 50; ++$i) { $s = @stream_socket_client('tcp://' . $address, $e, $err, 0.1); if ($s) { fclose($s); $ready = true; break; } usleep(20000); }
     if (!$ready) { throw new RuntimeException('Route server not ready'); }
     [$status] = webRequest($address, '/bling/connect.php'); check($status === 403, 'rota connect nega sessão anônima');
+    [$status] = webRequest($address, '/bling/products.php'); check($status === 403,'catálogo nega sessão anônima');
     [$status] = webRequest($address, '/bling/callback.php?code=SENSITIVE'); check($status === 403, 'rota callback nega sessão anônima');
     [, $headers] = webRequest($address, '/fixture/login');
     preg_match('/Set-Cookie: (__Host-D4A=[^;\r\n]+)/i', $headers, $m); $cookie = $m[1] ?? '';
@@ -56,6 +76,19 @@ try {
     [$status, $headers, $body] = webRequest($address, '/bling/connect.php?company_id=2', $cookie);
     check($status === 200 && str_contains($headers, 'no-store') && str_contains($headers, 'no-referrer'), 'formulário autenticado sem cache e sem referrer');
     check(str_contains($headers, "form-action 'self' https://www.bling.com.br;"), 'CSP do formulário permite redirect apenas ao origin Bling configurado');
+    [$blockedStatus] = webRequest($address, '/bling/products.php', $cookie);
+    check($blockedStatus===403,'catálogo desabilitado por padrão em homologação');
+    $settings['read_catalog_enabled']=true;
+    file_put_contents($fixture . '/private/settings.php', '<?php return ' . var_export($settings, true) . ';');
+    [$invalidStatus, , $invalidBody] = webRequest($address, '/bling/products.php?page%5B%5D=1&company_id=2', $cookie);
+    check($invalidStatus===400 && str_contains($invalidBody,'página informado é inválido'),'rota catálogo valida parâmetros antes da consulta externa');
+    [$catalogStatus, $catalogHeaders, $catalogBody] = webRequest($address, '/bling/products.php?company_id=2', $cookie);
+    check($catalogStatus===200 && str_contains($catalogBody,'2,5000') && str_contains($catalogBody,'-1,0000'),'página renderiza saldos com transporte simulado e token da empresa autenticada');
+    check(str_contains($catalogBody,'&lt;script&gt;UNTRUSTED-CATALOG&lt;/script&gt;') && !str_contains($catalogBody,'<script>UNTRUSTED-CATALOG'),'nomes de produtos escapados contra XSS');
+    check(!str_contains($catalogBody,'test-access-catalog') && str_contains($catalogHeaders,'no-store'),'página não expõe token nem permite cache de dados');
+    [$catalogStatus] = webRequest($address, '/bling/products.php', $cookie, []);
+    check($catalogStatus===405,'rota de catálogo aceita somente GET');
+
     preg_match('/name="csrf" value="([a-f0-9]+)"/', $body, $m); $csrf = $m[1] ?? '';
     [$status] = webRequest($address, '/bling/connect.php', $cookie, ['csrf' => 'wrong']); check($status === 400, 'CSRF inválido bloqueado na rota');
     [$status, $headers] = webRequest($address, '/bling/connect.php?company_id=2', $cookie, ['csrf' => $csrf]);
@@ -91,6 +124,12 @@ try {
     [$status, $headers] = webRequest($address,'/bling/account.php',$cookie,['csrf'=>$accountCsrf,'company'=>'1']);
     preg_match('/Set-Cookie: (__Host-D4A=[^;\r\n]+)/i', $headers, $m); $cookie=$m[1] ?? $cookie;
     check($status === 303 && str_contains($headers,'Location: /bling/connect.php'),'empresa autorizada selecionada no servidor');
+    [$status, , $body]=webRequest($address,'/bling/account.php',$cookie);
+    preg_match('/name="csrf" value="([a-f0-9]+)"/',$body,$m);
+    [$status,$headers]=webRequest($address,'/bling/account.php',$cookie,['csrf'=>$m[1],'company'=>'1','destination'=>'catalog']);
+    preg_match('/Set-Cookie: (__Host-D4A=[^;\r\n]+)/i',$headers,$m);$cookie=$m[1] ?? $cookie;
+    check($status===303 && str_contains($headers,'Location: /bling/products.php'),'botão do painel seleciona empresa e abre catálogo sem reconectar Bling');
+
     rename($fixture . '/private', $fixture . '/hostinger-private');
     $settings['auth_adapter'] = $fixture . '/hostinger-private/auth.php';
     $settings['log_file'] = $fixture . '/hostinger-private/logs/oauth.jsonl';
