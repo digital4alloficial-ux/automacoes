@@ -30,7 +30,7 @@ JWTs podem ter cerca de 1.500–3.000 caracteres; o banco usa TEXT para as cifra
 
 `state` da aplicação dura 10 minutos para permitir consentimento; isso não estende o prazo de 1 minuto do `code`. Se o código expirar durante processamento/espera, a pessoa precisa iniciar nova autorização. Não se repete a troca automaticamente. A página de erros alerta que reutilizar um code pode revogar o usuário, reforçando o consumo único no banco.
 
-O exemplo privado já contém os endpoints e `endpoints_verified=true` referentes à conferência documental. Isso **não** significa que credenciais, login, aprovação do aplicativo, infraestrutura ou consentimento real foram validados. O modo padrão agora oferece login próprio, testado localmente, sem usuários de produção criados. O adaptador externo alternativo continua negando acesso por padrão. Não foram chamadas operações de negócio, escrita ou revogação no Bling.
+O exemplo privado já contém os endpoints e `endpoints_verified=true` referentes à conferência documental. Isso **não** significa que credenciais, login, aprovação do aplicativo, infraestrutura ou consentimento real foram validados. O modo padrão oferece login próprio; posteriormente o usuário confirmou login, consentimento e renovação reais na Hostinger (ver STATUS.md), em contexto de homologação. A ausência de código OAuth nos logs de infraestrutura não foi atendida (SEC-001). O adaptador externo alternativo continua negando acesso por padrão. Não foram chamadas operações de negócio, escrita ou revogação no Bling.
 
 ## Codex conectado diretamente: MCP oficial
 

@@ -20,7 +20,7 @@ Os testes simulados não confirmam endpoints, HTTP Basic aceito pelo Bling, apro
 
 ## Resultado local registrado
 
-Em 23/10/2026: **95 checks aprovados, 0 falhas**, em PHP 8.2 e MariaDB 11.4. Incluem POST Basic, enable-jwt: 1 e form-urlencoded com escape correto, TLS confiável, rejeição de hostname incorreto/certificado não confiável, bloqueio de redirect, login local, provisionamento de hash, isolamento de permissões, revogação/expiração de sessões, rotas protegidas, CSRF e remoção da query antes do resultado. A hospedagem e o Bling real não foram acessados. A documentação oficial, inicialmente bloqueada pelo proxy, foi acessada posteriormente; endpoints e requisitos JWT foram conferidos.
+Em 24/10/2026: **95 checks aprovados, 0 falhas**, em PHP 8.2 e MariaDB 11.4. Incluem POST Basic, enable-jwt: 1 e form-urlencoded com escape correto, TLS confiável, rejeição de hostname incorreto/certificado não confiável, bloqueio de redirect, login local, provisionamento de hash, isolamento de permissões, revogação/expiração de sessões, rotas protegidas, CSRF e remoção da query antes do resultado. A hospedagem e o Bling real não foram acessados. A documentação oficial, inicialmente bloqueada pelo proxy, foi acessada posteriormente; endpoints e requisitos JWT foram conferidos.
 
 ## Homologação na Hostinger / hPanel, após configuração oficial
 
@@ -42,6 +42,10 @@ Registrar data, versão do PHP/MySQL, versão/commit implantado, referências of
 
 A CSP global `form-action 'self'` bloqueava no Chrome o redirect externo após o POST de conexão. O primeiro clique consumia o CSRF e um segundo clique retornava `csrf_invalid`. Em `public/bling/connect.php`, a CSP agora permite também o origin HTTPS do endpoint de autorização validado pela configuração, tanto no formulário quanto na resposta POST. As demais páginas mantêm a política restrita.
 
-Foram aprovados 95 checks PHP/MariaDB e 2 verificações reais no Chromium: reprodução do bloqueio com a política anterior e aceitação do redirect com a política corrigida. O teste de navegador usa dois origins locais e não contata o Bling; a suíte PHP verifica separadamente o host real no cabeçalho. Para executar a regressão com Node, Playwright e Chromium já instalados: `node tests/browser-csp.cjs` (opcional: definir `CHROMIUM_PATH`). Nenhuma verificação de certificado foi desabilitada. O consentimento Bling na Hostinger continua dependendo da atualização do arquivo e da homologação real.
+Foram aprovados 95 checks PHP/MariaDB e 2 verificações reais no Chromium: reprodução do bloqueio com a política anterior e aceitação do redirect com a política corrigida. O teste de navegador usa dois origins locais e não contata o Bling; a suíte PHP verifica separadamente o host real no cabeçalho. Para executar a regressão com Node, Playwright e Chromium já instalados: `node tests/browser-csp.cjs` (opcional: definir `CHROMIUM_PATH`). Nenhuma verificação de certificado foi desabilitada. Após atualizar manualmente o arquivo, o usuário confirmou consentimento e renovação reais na Hostinger; ver STATUS.md. A SEC-001 continua aberta.
 
 Implantação desta correção: substituir apenas `public/bling/connect.php` na pasta pública `automacoes/bling/connect.php`, preservando arquivos privados e `private-path.php`. Abrir uma nova página de login para iniciar um formulário novo, sem reenviar o POST antigo.
+
+## Homologação real reportada e limitação de segurança
+
+Em 24/10/2026 o usuário confirmou conexão PHP/MySQL, seis tabelas, login local, consentimento Bling e renovação controlada bem-sucedidos. Os comandos foram executados pelo usuário no seu SSH, sem exposição de tokens ao Codex. O item de logs de infraestrutura **não passou**: o suporte confirmou query OAuth nos access logs, sem garantia de redação no Premium. Ver [SEC-001](SECURITY.md). A continuidade de desenvolvimento foi solicitada com a pendência registrada; não equivale à aprovação de produção. Nenhuma operação de negócio/leitura/escrita foi executada nesta homologação OAuth.

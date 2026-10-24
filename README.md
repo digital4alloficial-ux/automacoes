@@ -27,7 +27,7 @@ A renovação ocorre sob demanda, 60 segundos antes da expiração informada pel
 
 ## Estado e pré-requisitos de produção
 
-**Ainda não habilitado para produção.** Não foram fornecidos aplicativo/credenciais Bling ou acesso ao hPanel da Hostinger. Foi implementado login próprio, ainda sem contas de produção criadas. A documentação oficial agora foi consultada: os endpoints foram preenchidos no exemplo e o cliente solicita JWT na troca e renovação. Veja [contrato oficial conferido](docs/BLING.md). Não houve consentimento real nem implantação na Hostinger.
+**Homologação funcional concluída, com pendência de segurança aberta.** O usuário implantou a aplicação no Hostinger Premium e confirmou login, autorização real no Bling e renovação de tokens. Os access logs da infraestrutura registram `code` e `state`; conforme resposta do provedor trazida pelo usuário, o Premium não permite garantir sua redação. O requisito permanece não atendido, e novos clientes de produção ainda não estão liberados. Desenvolvimento e testes controlados seguem autorizados. Veja [estado do projeto](docs/STATUS.md), [SEC-001](docs/SECURITY.md) e [contrato oficial](docs/BLING.md). Credenciais reais permanecem apenas na hospedagem, fora do repositório.
 
 O modo padrão agora é login próprio (`auth_mode=local`), sem autocadastro e sem contas padrão. A Digital4All provisiona usuários e vínculos por empresa pelo phpMyAdmin. Veja [login e primeiro cliente](docs/LOGIN.md). O modo alternativo `adapter` continua disponível para quem integrar outro sistema de identidade; seu exemplo nega acesso por padrão. Nenhum dos modos autoriza uma empresa apenas pelo ID recebido do navegador.
 
@@ -43,6 +43,8 @@ Se o provedor registrar a linha HTTP completa, ela poderá conter `code` e `stat
 
 ## Arquivos e instalação
 
+- [Estado e próximas etapas](docs/STATUS.md)
+- [Pendências de segurança](docs/SECURITY.md)
 - [Login próprio e primeiro cliente](docs/LOGIN.md)
 - [Instalação na Hostinger / hPanel](docs/HOSTINGER.md)
 - [Referência anterior para cPanel](docs/CPANEL.md)
